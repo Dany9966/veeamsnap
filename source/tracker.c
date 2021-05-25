@@ -189,7 +189,7 @@ int tracker_enum_cbt_info( int max_count, struct cbt_info_s* p_cbt_info, int* p_
 
             p_cbt_info[count].dev_capacity = sector_to_streamsize(blk_dev_get_capacity(tracker->target_dev));
         }
-        //log_tr_dev_t("A device was found under tracking ", tracker->original_dev_id);
+        log_tr_dev_t("A device was found under tracking ", tracker->original_dev_id);
         ++count;
         result = SUCCESS;
     }

@@ -79,7 +79,7 @@ static int _cbt_storage_write_page(cbt_storage_accessor_t* accessor, struct time
     sector_t phys_offset = 0;
     sector_t phys_length = 0;
 
-    //log_tr_d("DEBUG! write page# ", accessor->page_number);
+    log_tr_d("DEBUG! write page# ", accessor->page_number);
 
     //set magic
     memcpy(accessor->page->magic, CBT_STORAGE_MAGIC, 8);
@@ -110,7 +110,7 @@ static int _cbt_storage_write_page(cbt_storage_accessor_t* accessor, struct time
     }
 
     //write page
-    //log_tr_sect("DEBUG! offset= ", phys_offset);
+    log_tr_sect("DEBUG! offset= ", phys_offset);
     res = blk_direct_submit_page(accessor->device, WRITE_SYNC, phys_offset, accessor->pg);
     if (res != SUCCESS){
         log_err("Failed to read device");
@@ -464,7 +464,7 @@ int cbt_storage_write_finish(cbt_storage_accessor_t* accessor)
 
             accessor->page->number = accessor->page_number;
 
-            //log_tr_lld("DEBUG! write empty page #", accessor->page_number);
+            log_tr_lld("DEBUG! write empty page #", accessor->page_number);
             res = _cbt_storage_write_page(accessor, &tm);
             if (res != SUCCESS){
                 log_err_lld("Failed to get page #", accessor->page_number);

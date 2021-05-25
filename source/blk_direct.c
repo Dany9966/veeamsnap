@@ -162,7 +162,7 @@ int _dev_direct_submit_pages(
         sector_t bvec_len_sect = min_t( sector_t, (SECTORS_IN_PAGE - unordered), size_sector );
 
         if (0 == bio_add_page( bb, arr->pg[page_inx].page, sector_to_uint( bvec_len_sect ), sector_to_uint( unordered ) )){
-            //log_err_d( "bvec full! bi_size=", bio_bi_size( bb ) );
+            log_err_d( "bvec full! bi_size=", bio_bi_size( bb ) );
             goto blk_dev_direct_submit_pages_label_failed;
         }
         ++page_inx;

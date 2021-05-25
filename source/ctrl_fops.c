@@ -101,7 +101,7 @@ int ctrl_open(struct inode *inode, struct file *fl)
     }
 
     atomic_inc( &g_dev_open_cnt );
-    //log_tr( "Open ctrl file" );
+    log_tr( "Open ctrl file" );
 
     return SUCCESS;
 }
@@ -116,7 +116,7 @@ int ctrl_release(struct inode *inode, struct file *fl)
         ctrl_pipe_put_resource( (ctrl_pipe_t*)fl->private_data );
 
         atomic_dec( &g_dev_open_cnt );
-        //log_tr( "Close ctrl file" );
+        log_tr( "Close ctrl file" );
     }
     else{
         log_err( "Unable to close ctrl file: the file is already closed" );
@@ -133,7 +133,7 @@ int ioctl_compatibility_flags( unsigned long arg )
 
     logging_renew_check( );
 
-    //log_tr( "Get compatibility flags" );
+    log_tr( "Get compatibility flags" );
 
     param.flags = 0;
     param.flags |= VEEAMSNAP_COMPATIBILITY_SNAPSTORE;
@@ -557,7 +557,7 @@ int ioctl_snapshot_errno( unsigned long arg )
     int res;
     struct ioctl_snapshot_errno_s param;
 
-    //log_tr( "Snapshot get errno for device");
+    log_tr( "Snapshot get errno for device");
 
     if (0 != copy_from_user( &param, (void*)arg, sizeof( struct ioctl_dev_id_s ) )){
         log_err( "Unable failed to get snapstore error code: invalid user buffer" );
@@ -581,7 +581,7 @@ int ioctl_collect_snapshotdata_location_start( unsigned long arg )
 {
     struct ioctl_collect_snapshotdata_location_start_s param;
 
-    //log_tr( "Collect snapshot data location start" );
+    log_tr( "Collect snapshot data location start" );
 
     if (0 != copy_from_user( &param, (void*)arg, sizeof( struct ioctl_collect_snapshotdata_location_start_s ) )){
 		log_err("Unable to collect location of snapstore file: invalid user buffer");
@@ -602,7 +602,7 @@ int ioctl_collect_snapshotdata_location_get( unsigned long arg )
     rangelist_t ranges;
     size_t ranges_count = 0;
 
-    //log_tr( "Collect snapshot data location get" );
+    log_tr( "Collect snapshot data location get" );
 
     if (0 != copy_from_user( &param, (void*)arg, sizeof( struct ioctl_collect_snapshotdata_location_get_s ) )){
         log_err( "Unable to get location of snapstore file: invalid input buffer" );
@@ -664,7 +664,7 @@ int ioctl_collect_snapshotdata_location_complete( unsigned long arg )
 {
     struct ioctl_collect_snapshotdata_location_complete_s param;
 
-    //log_tr( "Collect snapshot data location complete" );
+    log_tr( "Collect snapshot data location complete" );
 
     if (0 != copy_from_user( &param, (void*)arg, sizeof( struct ioctl_collect_snapshotdata_location_complete_s ) )){
         log_err( "Unable to collect location of snapstore file: invalid user buffer" );

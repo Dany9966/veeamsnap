@@ -286,14 +286,14 @@ int _sparse_block_set_branch(sparse_block_t* block, stream_size_t index, char* p
                 break;
 
             if (sub_blk_st == BLK_ST_FULL){
-                //log_err_llx( "block full. index=", index );
+                log_err_llx( "block full. index=", index );
 
                 _sparse_block_destroy(block->blocks_array->blk[inx]);
                 block->blocks_array->blk[inx] = BLOCK_FULL;
                 ++block->cnt_full;
 
                 if (block->cnt_full == SPARSE_BITMAP_BLOCK_SIZE){
-                    //log_err_llx( "block array full. index=", index );
+                    log_err_llx( "block array full. index=", index );
 
                     blk_st = BLK_ST_FULL;
 

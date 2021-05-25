@@ -374,7 +374,7 @@ int snapstore_add_file( veeam_uuid_t* id, page_array_t* ranges, size_t ranges_cn
             range.ofs = sector_from_streamsize( ioctl_range->left );
             range.cnt = sector_from_streamsize( ioctl_range->right ) - range.ofs;
 
-            //log_tr_range( "range=", range );
+            log_tr_range( "range=", (&range) );
 
             while (range_offset < range.cnt){
                 range_t rg;
@@ -384,7 +384,7 @@ int snapstore_add_file( veeam_uuid_t* id, page_array_t* ranges, size_t ranges_cn
 
                 range_offset += rg.cnt;
 
-                //log_tr_range( "add rg=", rg );
+                log_tr_range( "add rg=", (&rg) );
 
                 res = rangelist_add( &blk_rangelist, &rg );
                 if (res != SUCCESS){
@@ -410,7 +410,7 @@ int snapstore_add_file( veeam_uuid_t* id, page_array_t* ranges, size_t ranges_cn
             if (res != SUCCESS)
                 break;
 
-            //log_traceln_sz( "blocks_count=", blocks_count );
+            log_tr_sz( "blocks_count=", blocks_count );
         }
     }
     if ((res == SUCCESS) && (current_blk_size != 0))
@@ -469,7 +469,7 @@ int snapstore_add_multidev(veeam_uuid_t* id, dev_t dev_id, page_array_t* ranges,
             range.ofs = sector_from_streamsize( data->left );
             range.cnt = sector_from_streamsize( data->right ) - range.ofs;
 
-            //log_tr_format( "range=%lld:%lld", range.ofs, range.cnt );
+            log_tr_format( "range=%lld:%lld", range.ofs, range.cnt );
 
             while (range_offset < range.cnt){
                 range_t rg;
@@ -479,7 +479,7 @@ int snapstore_add_multidev(veeam_uuid_t* id, dev_t dev_id, page_array_t* ranges,
 
                 range_offset += rg.cnt;
 
-                //log_tr_range( "add rg=", rg );
+                log_tr_range( "add rg=", (&rg) );
                 extension = (void*)snapstore_multidev_get_device( snapstore->multidev, dev_id );
                 if (NULL == extension){
                     log_err_format( "Cannot find or open device [%d:%d] for multidevice snapstore", MAJOR( dev_id ), MINOR( dev_id ) );
@@ -511,7 +511,7 @@ int snapstore_add_multidev(veeam_uuid_t* id, dev_t dev_id, page_array_t* ranges,
             if (res != SUCCESS)
                 break;
 
-            //log_traceln_sz( "blocks_count=", blocks_count );
+            log_tr_sz( "blocks_count=", blocks_count );
         }
     }
     if ((res == SUCCESS) && (current_blk_size != 0))

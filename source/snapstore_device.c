@@ -277,7 +277,7 @@ int snapstore_device_prepare_requests( snapstore_device_t* snapstore_device, ran
     for (inx = first; inx <= last; inx++){
         if (_snapstore_device_is_block_stored( snapstore_device, inx ))
         {
-            //log_tr_sz( "Already stored block # ", inx );
+            log_tr_sz( "Already stored block # ", inx );
         }else{
 
             res = snapstore_device_add_request( snapstore_device, inx, dio_copy_req );

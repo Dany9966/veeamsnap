@@ -890,7 +890,7 @@ void cbt_persistent_device_attach(char* dev_name, char* dev_path)
             return;
         }
 
-        //log_tr("DEBUG! lookup_bdev complete success");
+        log_tr("DEBUG! lookup_bdev complete success");
         if (bdev == NULL){
             log_err_s("Cannot find device by name ", dev_name);
             return;

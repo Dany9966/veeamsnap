@@ -49,7 +49,7 @@ void ctrl_pipe_release_cb( void* resource )
 {
     ctrl_pipe_t* pipe = (ctrl_pipe_t*)resource;
 
-    //log_tr( "Ctrl pipe release" );
+    log_tr( "Ctrl pipe release" );
 
     while (!container_empty( &pipe->cmd_to_user )){
         cmd_to_user_t* request = (cmd_to_user_t*)container_get_first( &pipe->cmd_to_user );
@@ -68,7 +68,7 @@ void ctrl_pipe_release_cb( void* resource )
 ctrl_pipe_t* ctrl_pipe_new( void )
 {
     ctrl_pipe_t* pipe;
-    //log_tr( "Create new ctrl pipe" );
+    log_tr( "Create new ctrl pipe" );
 
     if (NULL == (pipe = (ctrl_pipe_t*)container_new( &CtrlPipes ))){
         log_tr( "Failed to create new ctrl pipe: not enough memory" );
@@ -227,7 +227,7 @@ ssize_t ctrl_pipe_command_initiate( ctrl_pipe_t* pipe, const char __user *buffer
         }
         unique_id = (veeam_uuid_t*)(kernel_buffer + processed);
         processed += 16;
-        //log_tr_uuid( "unique_id=", unique_id );
+        log_tr_uuid( "unique_id=", unique_id );
 
 
         //get snapstore empty limit
@@ -237,7 +237,7 @@ ssize_t ctrl_pipe_command_initiate( ctrl_pipe_t* pipe, const char __user *buffer
         }
         stretch_empty_limit = *(stream_size_t*)(kernel_buffer + processed);
         processed += sizeof( stream_size_t );
-        //log_tr_lld( "stretch_empty_limit=", stretch_empty_limit );
+        log_tr_lld( "stretch_empty_limit=", stretch_empty_limit );
 
 
         //get snapstore device id
@@ -247,7 +247,7 @@ ssize_t ctrl_pipe_command_initiate( ctrl_pipe_t* pipe, const char __user *buffer
         }
         snapstore_dev_id = (struct ioctl_dev_id_s*)(kernel_buffer + processed);
         processed += sizeof( struct ioctl_dev_id_s );
-        //log_tr_dev_t( "snapstore_dev_id=", MKDEV( snapstore_dev_id->major, snapstore_dev_id->minor ) );
+        log_tr_dev_t( "snapstore_dev_id=", MKDEV( snapstore_dev_id->major, snapstore_dev_id->minor ) );
 
 
         //get device id list length
@@ -257,7 +257,7 @@ ssize_t ctrl_pipe_command_initiate( ctrl_pipe_t* pipe, const char __user *buffer
         }
         dev_id_list_length = *(unsigned int*)(kernel_buffer + processed);
         processed += sizeof( unsigned int );
-        //log_tr_d( "dev_id_list_length=", dev_id_list_length );
+        log_tr_d( "dev_id_list_length=", dev_id_list_length );
 
 
         //get devices id list
@@ -270,7 +270,7 @@ ssize_t ctrl_pipe_command_initiate( ctrl_pipe_t* pipe, const char __user *buffer
 
         //{
             //unsigned int dev_id_list_inx;
-            //log_tr( "Initiate stretch snapstore for device:" )
+            // log_tr( "Initiate stretch snapstore for device:" )
             //for (dev_id_list_inx = 0; dev_id_list_inx < dev_id_list_length; ++dev_id_list_inx){
             //    log_tr_dev_id_s( "  ", dev_id_list[dev_id_list_inx] );
             //}
@@ -345,7 +345,7 @@ ssize_t ctrl_pipe_command_next_portion( ctrl_pipe_t* pipe, const char __user *bu
             break;
         }
         processed += 16;
-        //log_tr_uuid( "snapstore unique_id=", unique_id );
+        log_tr_uuid( "snapstore unique_id=", &(unique_id) );
 
         //get ranges length
         if ((length - processed) < 4){
@@ -392,9 +392,10 @@ ssize_t ctrl_pipe_command_next_portion( ctrl_pipe_t* pipe, const char __user *bu
     if (ranges)
         page_array_free( ranges );
 
-    if (result == SUCCESS)
-        //log_traceln_sz( "processed=", processed );
+    if (result == SUCCESS) {
+        log_tr_sz( "processed=", processed );
         return processed;
+    }
     return result;
 }
 #ifdef SNAPSTORE_MULTIDEV
@@ -422,7 +423,7 @@ ssize_t ctrl_pipe_command_next_portion_multidev( ctrl_pipe_t* pipe, const char _
             break;
         }
         processed += 16;
-        //log_tr_uuid( "snapstore unique_id=", unique_id );
+        log_tr_uuid( "snapstore unique_id=", (&unique_id) );
 
         //get device id
         if ((length - processed) < 8){
@@ -488,9 +489,10 @@ ssize_t ctrl_pipe_command_next_portion_multidev( ctrl_pipe_t* pipe, const char _
     if (ranges)
         page_array_free( ranges );
 
-    if (result == SUCCESS)
-        //log_traceln_sz( "processed=", processed );
+    if (result == SUCCESS) {
+        log_tr_sz( "processed=", processed );
         return processed;
+    }
     return result;
 }
 #endif

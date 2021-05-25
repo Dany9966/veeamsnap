@@ -220,7 +220,7 @@ int image_trace_read(snapimage_t* image, unsigned int capacity, unsigned int* p_
         processed_count += can_load;
 
     } while (processed_count < capacity);
-    //log_tr_d("DEBUG! processed_count=", processed_count);
+    log_tr_d("DEBUG! processed_count=", processed_count);
 
     *p_processed_count = processed_count;
     return SUCCESS;
@@ -244,7 +244,7 @@ int _snapimage_open( struct block_device *bdev, fmode_t mode )
 {
     int res = SUCCESS;
 
-    //log_tr_format( "Snapshot image open device [%d:%d]. Block device object 0x%p", MAJOR( bdev->bd_dev ), MINOR( bdev->bd_dev ), bdev );
+    log_tr_format( "Snapshot image open device [%d:%d]. Block device object 0x%p", MAJOR( bdev->bd_dev ), MINOR( bdev->bd_dev ), bdev );
     if (bdev->bd_disk == NULL){
         log_err_dev_t( "Unable to open snapshot image: bd_disk is NULL. Device ", bdev->bd_dev );
         log_err_p( "Block device object ", bdev );
@@ -330,7 +330,7 @@ void _snapimage_close( struct gendisk *disk, fmode_t mode )
         do{
             snapimage_t* image = disk->private_data;
 
-            //log_tr_format( "Snapshot image close device [%d:%d]. Block device object 0x%p", MAJOR( image->open_bdev->bd_dev ), MINOR( image->open_bdev->bd_dev ), image->open_bdev );
+            log_tr_format( "Snapshot image close device [%d:%d]. Block device object 0x%p", MAJOR( image->open_bdev->bd_dev ), MINOR( image->open_bdev->bd_dev ), image->open_bdev );
 
             mutex_lock( &image->open_locker );
             {
@@ -395,7 +395,7 @@ int _snapimage_ioctl( struct block_device *bdev, fmode_t mode, unsigned cmd, uns
         case IOCTL_IMAGE_TRACE_READ:
         {
             struct ioctl_image_trace_read_s param;
-            //log_tr("DEBUG! IOCTL_IMAGE_TRACE_READ received");
+            log_tr("DEBUG! IOCTL_IMAGE_TRACE_READ received");
             if (0 == copy_from_user(&param, (void*)arg, sizeof(struct ioctl_image_trace_read_s))){
                 res = image_trace_read(image, param.capacity, &param.count, param.records );
                 if (res == SUCCESS){
@@ -408,10 +408,10 @@ int _snapimage_ioctl( struct block_device *bdev, fmode_t mode, unsigned cmd, uns
                 //    log_err_d(" Unable to read trace info, errno=", 0-res);
             }
             else{
-                //log_err(" Unable to read trace info: invalid user buffer");
+                log_err(" Unable to read trace info: invalid user buffer");
                 res = -EINVAL;
             }
-            //log_tr("DEBUG! IOCTL_IMAGE_TRACE_READ complete");
+            log_tr("DEBUG! IOCTL_IMAGE_TRACE_READ complete");
         }
         break;
 #endif
@@ -926,7 +926,7 @@ int snapimage_create( dev_t original_dev )
         init_waitqueue_head( &image->rq_proc_event );
         wake_up_process( image->rq_processor );
 
-        //log_tr_p( "disk=", disk );
+        log_tr_p( "disk=", disk );
 
     } while (false);
 
@@ -1259,8 +1259,8 @@ int snapimage_mark_dirty_blocks(dev_t image_dev_id, struct block_range_s* block_
             sector_t ofs = (sector_t)block_ranges[inx].ofs;
             sector_t cnt = (sector_t)block_ranges[inx].cnt;
 
-            //log_tr_sect("DEBUG! sector ofs=", ofs);
-            //log_tr_sect("DEBUG! sector cnt=", cnt);
+            log_tr_sect("DEBUG! sector ofs=", ofs);
+            log_tr_sect("DEBUG! sector cnt=", cnt);
 
             res = cbt_map_set_both(image->cbt_map, ofs, cnt);
             if (res != SUCCESS){

@@ -469,8 +469,8 @@ void __exit veeamsnap_exit(void)
 
 
 #ifdef VEEAMSNAP_MEMORY_LEAK_CONTROL
-    //log_tr_d( "mem_cnt=", atomic_read( &g_mem_cnt ) );
-    //log_tr_d( "vmem_cnt=", atomic_read( &g_vmem_cnt ) );
+    log_tr_d( "mem_cnt=", atomic_read( &g_mem_cnt ) );
+    // log_tr_d( "vmem_cnt=", atomic_read( &g_vmem_cnt ) );
 #endif
 
 

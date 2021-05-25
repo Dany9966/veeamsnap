@@ -244,7 +244,7 @@ sector_t _blk_deferred_submit_pages(
     nr_iovecs = page_count_calc_sectors( ofs_sector, size_sector );
 
     while (NULL == (bio = _blk_deferred_bio_alloc( nr_iovecs ))){
-        //log_tr_d( "Failed to allocate bio for defer IO. nr_iovecs=", nr_iovecs );
+        log_tr_d( "Failed to allocate bio for defer IO. nr_iovecs=", nr_iovecs );
 
         size_sector = (size_sector >> 1) & ~(SECTORS_IN_PAGE - 1);
         if (size_sector == 0){
@@ -277,7 +277,7 @@ sector_t _blk_deferred_submit_pages(
         BUG_ON( (page_inx > arr->pg_cnt) );
         page = arr->pg[page_inx].page;
         if (0 == bio_add_page( bio, page, sector_to_uint( bvec_len_sect ), sector_to_uint( unordered ) )){
-            //log_err_d( "bvec full! bi_size=", bio_bi_size( bio ) );
+            log_err_d( "bvec full! bi_size=", bio_bi_size( bio ) );
             bio_put( bio );
             return 0;
         }
@@ -471,16 +471,16 @@ int blk_deferred_request_wait( blk_deferred_request_t* dio_req )
 
     //if (0 == wait_for_completion_timeout( &dio_req->complete, (HZ * 30) )){
     while (0 == wait_for_completion_timeout( &dio_req->complete, (HZ * 1) )){
-        //log_warnln( "Defer IO request timeout" );
-        //log_err_sect( "sect_len=", dio_req->sect_len );
-        //log_err_sect( "sect_processed=", atomic64_read( &dio_req->sect_processed ) );
+        // log_warnln( "Defer IO request timeout" );
+        log_err_sect( "sect_len=", dio_req->sect_len );
+        log_err_sect( "sect_processed=", atomic64_read( &dio_req->sect_processed ) );
         //return -EFAULT;
 
         current_jiffies = get_jiffies_64( );
         if (jiffies_to_msecs( current_jiffies - start_jiffies ) > 60 * 1000){
             log_warn( "Defer IO request timeout" );
-            //log_err_sect( "sect_processed=", atomic64_read( &dio_req->sect_processed ) );
-            //log_err_sect( "sect_len=", dio_req->sect_len );
+            log_err_sect( "sect_processed=", atomic64_read( &dio_req->sect_processed ) );
+            log_err_sect( "sect_len=", dio_req->sect_len );
             return -EDEADLK;
         }
     }
@@ -563,7 +563,7 @@ int blk_deferred_request_store_file( struct block_device* blk_dev, blk_deferred_
                 sector_t process_sect;
                 BUG_ON( NULL == dio->buff );
 
-                //log_err_range( "rg=", (*rg) );
+                log_err_range( "rg=", rg );
 
                 process_sect = blk_deferred_submit_pages( blk_dev, dio_copy_req, WRITE, page_array_ofs, dio->buff, rg->ofs, rg->cnt );
                 BUG_ON( rg->cnt != process_sect );
@@ -625,7 +625,7 @@ int blk_deferred_request_store_multidev( blk_deferred_request_t* dio_copy_req )
 
                 BUG_ON( NULL == dio->buff );
 
-                //log_err_range( "rg=", (*rg) );
+                log_err_range( "rg=", rg );
 
                 process_sect = blk_deferred_submit_pages( blk_dev, dio_copy_req, WRITE, page_array_ofs, dio->buff, rg->ofs, rg->cnt );
                 BUG_ON( rg->cnt != process_sect );

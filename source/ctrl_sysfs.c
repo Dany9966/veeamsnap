@@ -71,7 +71,7 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
     char* dev_name = NULL;
     char* dev_path = NULL;
 
-    //log_tr_s("DEBUG! buffer: ", buf);
+    log_tr_s("DEBUG! buffer: ", buf);
 
     ++_notify_counter;
 
@@ -86,11 +86,11 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
                 case 0://add or remove
                     if ((len == 3) && (0 == memcmp("add", buf + ofs, 3))){
                         type = NotifyCommandAdd;
-                        //log_tr("DEBUG! Found add command");
+                        log_tr("DEBUG! Found add command");
                     }
                     else if ((len == 6) && (0 == memcmp("remove", buf + ofs, 6))){
                         type = NotifyCommandRemove;
-                        //log_tr("DEBUG! Found remove command");
+                        log_tr("DEBUG! Found remove command");
                     }else{
                         log_tr("Invalid command found");
                         type = NotifyCommandInvalid;
@@ -105,7 +105,7 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
                     memcpy(dev_name, "/dev/", 5);
                     memcpy(dev_name+5, buf + ofs, len);
                     dev_name[5+len] = '\0';
-                    //log_tr_s("DEBUG! Found device name", dev_name);
+                    log_tr_s("DEBUG! Found device name", dev_name);
                     break;
                 case 2://device path
                     dev_path = dbg_kzalloc(len+1, GFP_KERNEL);
@@ -115,7 +115,7 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
                     }
                     memcpy(dev_path, buf + ofs, len);
                     dev_path[len] = '\0';
-                    //log_tr_s("DEBUG! Found device path", dev_path);
+                    log_tr_s("DEBUG! Found device path", dev_path);
                     break;
                 default:
                     log_err_s("Failed to parse text: ", buf + ofs);
@@ -176,7 +176,7 @@ static ssize_t params_store(struct class *class, const char *buf, size_t count)
     char* param_name = NULL;
     char* param_value = NULL;
 
-    //log_tr_s("DEBUG! buffer: ", buf);
+    log_tr_s("DEBUG! buffer: ", buf);
 
     // to do string parsing
     while (ofs < count)

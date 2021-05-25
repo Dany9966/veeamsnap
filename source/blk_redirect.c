@@ -66,7 +66,7 @@ void blk_redirect_bio_endio( struct bio *bb )
 #endif
         if (err != SUCCESS){
             log_err_d( "Failed to process redirect IO request. errno=", 0 - err );
-            //log_err_sect( "offset=", bio_bi_sector( bb ) );
+            log_err_sect( "offset=", bio_bi_sector( bb ) );
 
             if (rq_endio->err == SUCCESS)
                 rq_endio->err = err;
@@ -194,11 +194,11 @@ int _blk_dev_redirect_part_fast( blk_redirect_bio_endio_t* rq_endio, int directi
             bvec_sectors = rq_count - processed_sectors;
 
         if (bvec_sectors == 0){
-            //log_tr( "bvec_sectors ZERO!" );
-            //log_tr_sect( "bio_vec_sectors=", bio_vec_sectors( bvec ) );
-            //log_tr_sect( "bvec_ofs=", bvec_ofs );
-            //log_tr_sect( "rq_count=", rq_count );
-            //log_tr_sect( "processed_sectors=", processed_sectors );
+            log_tr( "bvec_sectors ZERO!" );
+            log_tr_sect( "bio_vec_sectors=", bio_vec_sectors( bvec ) );
+            log_tr_sect( "bvec_ofs=", bvec_ofs );
+            log_tr_sect( "rq_count=", rq_count );
+            log_tr_sect( "processed_sectors=", processed_sectors );
             res = -EIO;
             goto __fail_out;
         }
