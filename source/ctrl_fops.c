@@ -170,6 +170,9 @@ int ioctl_tracking_add( unsigned long arg )
         return -ENODATA;
     }
 
+    log_tr_s("Adding device major: %d", dev.major);
+    log_tr_s("Adding device minor: %d", dev.minor);
+
     return tracking_add( MKDEV( dev.major, dev.minor ), CBT_BLOCK_SIZE_DEGREE, 0ull );
 }
 

@@ -875,6 +875,8 @@ bool cbt_persistent_device_filter(dev_t dev_id)
 void cbt_persistent_device_attach(char* dev_name, char* dev_path)
 {
     dev_t dev_id;
+    log_tr_s("CALL: cbt_persistent_device_attach(dev_name): ", dev_name);
+    log_tr_s("CALL: cbt_persistent_device_attach(dev_path): ", dev_path);
 
     {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5,11,0)
@@ -986,6 +988,8 @@ void cbt_persistent_device_attach(char* dev_name, char* dev_path)
 
 void cbt_persistent_device_detach(char* dev_name, char* dev_path)
 {
+    log_tr_s("CALL: cbt_persistent_device_detach(dev_name): ", dev_name);
+    log_tr_s("CALL: cbt_persistent_device_detach(dev_path): ", dev_path);
     dev_t dev_id = 0;
     tracker_t* tracker = NULL;
 

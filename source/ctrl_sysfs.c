@@ -90,9 +90,9 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
                     }
                     else if ((len == 6) && (0 == memcmp("remove", buf + ofs, 6))){
                         type = NotifyCommandRemove;
-                        log_tr("DEBUG! Found remove command");
+                        log_tr("DEBUG! Found remove command ");
                     }else{
-                        log_tr("Invalid command found");
+                        log_tr("Invalid command found ");
                         type = NotifyCommandInvalid;
                     }
                     break;
@@ -100,12 +100,12 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
                     dev_name = dbg_kzalloc(5+len+1, GFP_KERNEL);
                     if (dev_name == NULL){
                         res = -ENOMEM;
-                        log_err("Failed allocate memory for device name");
+                        log_err("Failed allocate memory for device name ");
                     }
                     memcpy(dev_name, "/dev/", 5);
                     memcpy(dev_name+5, buf + ofs, len);
                     dev_name[5+len] = '\0';
-                    log_tr_s("DEBUG! Found device name", dev_name);
+                    log_tr_s("DEBUG! Found device name ", dev_name);
                     break;
                 case 2://device path
                     dev_path = dbg_kzalloc(len+1, GFP_KERNEL);
@@ -115,7 +115,7 @@ static ssize_t blkdev_notify_store(struct class *class, const char *buf, size_t 
                     }
                     memcpy(dev_path, buf + ofs, len);
                     dev_path[len] = '\0';
-                    log_tr_s("DEBUG! Found device path", dev_path);
+                    log_tr_s("DEBUG! Found device path ", dev_path);
                     break;
                 default:
                     log_err_s("Failed to parse text: ", buf + ofs);
