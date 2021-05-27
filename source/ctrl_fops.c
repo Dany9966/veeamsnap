@@ -163,6 +163,7 @@ int ioctl_get_version( unsigned long arg )
 
 int ioctl_tracking_add( unsigned long arg )
 {
+    log_tr("CALL: ioctl_tracking_add");
     struct ioctl_dev_id_s dev;
 
     if (0 != copy_from_user( &dev, (void*)arg, sizeof( struct ioctl_dev_id_s ) )){
@@ -170,9 +171,7 @@ int ioctl_tracking_add( unsigned long arg )
         return -ENODATA;
     }
 
-    log_tr_s("Adding device major: %d", dev.major);
-    log_tr_s("Adding device minor: %d", dev.minor);
-
+    log_tr_format("Adding new device node to tracking: %d:%d", dev.major, dev.minor);
     return tracking_add( MKDEV( dev.major, dev.minor ), CBT_BLOCK_SIZE_DEGREE, 0ull );
 }
 
@@ -184,6 +183,8 @@ int ioctl_tracking_remove( unsigned long arg )
         log_err( "Unable to remove device from tracking: invalid user buffer" );
         return -ENODATA;
     }
+
+    log_tr_format("Removing device node from tracking: %d:%d", dev.major, dev.minor);
     return tracking_remove( MKDEV( dev.major, dev.minor ) );;
 }
 
@@ -587,7 +588,7 @@ int ioctl_collect_snapshotdata_location_start( unsigned long arg )
     log_tr( "Collect snapshot data location start" );
 
     if (0 != copy_from_user( &param, (void*)arg, sizeof( struct ioctl_collect_snapshotdata_location_start_s ) )){
-		log_err("Unable to collect location of snapstore file: invalid user buffer");
+        log_err("Unable to collect location of snapstore file: invalid user buffer");
         return -EINVAL;
     }
 
@@ -838,6 +839,7 @@ long ctrl_unlocked_ioctl( struct file *filp, unsigned int cmd, unsigned long arg
 {
     long status = -ENOTTY;
     size_t inx = 0;
+    log_tr_format("Got unlocked IOCTL request with command ID: %d", cmd);
 
     while (veeam_ioctl_table[inx].cmd != 0){
         if (veeam_ioctl_table[inx].cmd == cmd){
