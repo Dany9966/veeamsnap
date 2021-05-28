@@ -1,0 +1,138 @@
+// Copyright Cloudbase Solutions SRL 2021
+
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+#include "source/veeamsnap_ioctl.h"
+
+
+#define VEEAM_SNAP_DEVICE_PATH "/dev/veeamsnap"
+
+
+void print_ioctl_codes() {
+	struct ioctl_call {
+		unsigned long long command;
+		char* name;
+	};
+	struct ioctl_call ioctl_calls[] = {
+                // {SUCCESS, "SUCCESS"},
+                {MAX_TRACKING_DEVICE_COUNT, "MAX_TRACKING_DEVICE_COUNT"},
+                {VEEAM_SNAP, "VEEAM_SNAP"},
+                {VEEAMSNAP_COMPATIBILITY_SNAPSTORE, "VEEAMSNAP_COMPATIBILITY_SNAPSTORE"},
+                {VEEAMSNAP_COMPATIBILITY_BTRFS, "VEEAMSNAP_COMPATIBILITY_BTRFS"},
+                {VEEAMSNAP_COMPATIBILITY_MULTIDEV, "VEEAMSNAP_COMPATIBILITY_MULTIDEV"},
+                {IOCTL_COMPATIBILITY_FLAGS, "IOCTL_COMPATIBILITY_FLAGS"},
+                {IOCTL_GETVERSION, "IOCTL_GETVERSION"},
+                {IOCTL_TRACKING_ADD, "IOCTL_TRACKING_ADD"},
+                {IOCTL_TRACKING_REMOVE, "IOCTL_TRACKING_REMOVE"},
+                {IOCTL_TRACKING_COLLECT, "IOCTL_TRACKING_COLLECT"},
+                {IOCTL_TRACKING_BLOCK_SIZE, "IOCTL_TRACKING_BLOCK_SIZE"},
+                {IOCTL_TRACKING_READ_CBT_BITMAP, "IOCTL_TRACKING_READ_CBT_BITMAP"},
+                {IOCTL_TRACKING_MARK_DIRTY_BLOCKS, "IOCTL_TRACKING_MARK_DIRTY_BLOCKS"},
+                {IOCTL_SNAPSHOT_CREATE, "IOCTL_SNAPSHOT_CREATE"},
+                {IOCTL_SNAPSHOT_DESTROY, "IOCTL_SNAPSHOT_DESTROY"},
+                {IOCTL_SNAPSHOT_ERRNO, "IOCTL_SNAPSHOT_ERRNO"},
+                {IOCTL_SNAPSTORE_CREATE, "IOCTL_SNAPSTORE_CREATE"},
+                {IOCTL_SNAPSTORE_FILE, "IOCTL_SNAPSTORE_FILE"},
+                {IOCTL_SNAPSTORE_MEMORY, "IOCTL_SNAPSTORE_MEMORY"},
+                {IOCTL_SNAPSTORE_CLEANUP, "IOCTL_SNAPSTORE_CLEANUP"},
+                {IOCTL_SNAPSTORE_FILE_MULTIDEV, "IOCTL_SNAPSTORE_FILE_MULTIDEV"},
+                {IOCTL_COLLECT_SNAPSHOT_IMAGES, "IOCTL_COLLECT_SNAPSHOT_IMAGES"},
+                {IOCTL_COLLECT_SNAPSHOTDATA_LOCATION_START, "IOCTL_COLLECT_SNAPSHOTDATA_LOCATION_START"},
+                {IOCTL_COLLECT_SNAPSHOTDATA_LOCATION_GET, "IOCTL_COLLECT_SNAPSHOTDATA_LOCATION_GET"},
+                {IOCTL_COLLECT_SNAPSHOTDATA_LOCATION_COMPLETE, "IOCTL_COLLECT_SNAPSHOTDATA_LOCATION_COMPLETE"},
+                {IOCTL_PERSISTENTCBT_DATA, "IOCTL_PERSISTENTCBT_DATA"},
+                {IOCTL_PRINTSTATE, "IOCTL_PRINTSTATE"},
+                {VEEAMSNAP_CHARCMD_UNDEFINED, "VEEAMSNAP_CHARCMD_UNDEFINED"},
+                {VEEAMSNAP_CHARCMD_ACKNOWLEDGE, "VEEAMSNAP_CHARCMD_ACKNOWLEDGE"},
+                {VEEAMSNAP_CHARCMD_INVALID, "VEEAMSNAP_CHARCMD_INVALID"},
+                {VEEAMSNAP_CHARCMD_INITIATE, "VEEAMSNAP_CHARCMD_INITIATE"},
+                {VEEAMSNAP_CHARCMD_NEXT_PORTION, "VEEAMSNAP_CHARCMD_NEXT_PORTION"},
+                {VEEAMSNAP_CHARCMD_NEXT_PORTION_MULTIDEV, "VEEAMSNAP_CHARCMD_NEXT_PORTION_MULTIDEV"},
+                {VEEAMSNAP_CHARCMD_HALFFILL, "VEEAMSNAP_CHARCMD_HALFFILL"},
+                {VEEAMSNAP_CHARCMD_OVERFLOW, "VEEAMSNAP_CHARCMD_OVERFLOW"},
+                {VEEAMSNAP_CHARCMD_TERMINATE, "VEEAMSNAP_CHARCMD_TERMINATE"},
+		{0, NULL}
+	};
+
+	int i = 0;
+	printf("test\n");
+	while ((ioctl_calls[i].command != 0) && (ioctl_calls[i].name != NULL)) {
+		printf("%s: %llu\n", ioctl_calls[i].name, ioctl_calls[i].command);
+		i ++;
+	}
+}
+
+
+
+
+struct ioctl_getversion_s* get_veeam_version(int veeamsfd) {
+    struct ioctl_getversion_s* version = (
+        struct ioctl_getversion_s*) malloc(sizeof(struct ioctl_getversion_s));
+    if (version == NULL) {
+        printf("Error occurred while allocating memory for version string.\n");
+        return NULL;
+    }
+
+    printf("Attempting to read version info from device.\n");
+    int result = ioctl(veeamsfd, IOCTL_GETVERSION, version);
+    if (result != 0) {
+        printf("Error code returned whilst attempting to read version: %d\n", result);
+        free(version);
+        return NULL;
+    }
+
+    return version;
+}
+
+
+int add_device_for_tracking(int veeamsfd, struct ioctl_dev_id_s* device_id) {
+    printf(
+        "Attempting to register following device for tracking: %d:%d\n",
+        device_id->major, device_id->minor);
+    int res = ioctl(veeamsfd, IOCTL_TRACKING_ADD, device_id);
+    if (res != 0) {
+        printf(
+            "WARN: failed to enable tracking for device %d:%d with error code: %d\n",
+            device_id->major, device_id->minor, res);
+    }
+    return res;
+}
+
+
+int main() {
+    int veeamsfd = open(VEEAM_SNAP_DEVICE_PATH, O_WRONLY);
+    if (veeamsfd < 0) {
+        printf(
+            "Failed to open Veeam device %s. Code: %d\n",
+            VEEAM_SNAP_DEVICE_PATH, veeamsfd);
+        return veeamsfd;
+    }
+
+    struct ioctl_getversion_s* version = get_veeam_version(veeamsfd);
+    if (version == NULL) {
+        printf("Version get failed.\n");
+        // close(fd);
+        // return -1;
+    } else {
+        printf(
+            "Read version was: Major-Minor-Revision-Build: %d-%d-%d-%d\n",
+            version->major, version->minor, version->revision, version->build);
+    }
+
+    // hardcoded /dev/sdb
+    struct ioctl_dev_id_s sdb_device_id = {8, 16};
+    int res = add_device_for_tracking(veeamsfd, &sdb_device_id);
+    if (res != 0) {
+        printf(
+            "Error code returned whilst trying to add device %d:%d for tracking: %d\n",
+            sdb_device_id.major, sdb_device_id.minor, res);
+    }
+
+    free(version);
+    close(veeamsfd);
+    return 0;
+}
