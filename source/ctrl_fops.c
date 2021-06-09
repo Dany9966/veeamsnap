@@ -261,6 +261,7 @@ int ioctl_tracking_block_size( unsigned long arg )
 
 int ioctl_tracking_read_cbt_map( unsigned long arg )
 {
+    log_tr("ioctl_tracking_read_cbt_map called.\n");
     struct ioctl_tracking_read_cbt_bitmap_s readbitmap;
 
     if (0 != copy_from_user( &readbitmap, (void*)arg, sizeof( struct ioctl_tracking_read_cbt_bitmap_s ) )){
@@ -852,6 +853,9 @@ long ctrl_unlocked_ioctl( struct file *filp, unsigned int cmd, unsigned long arg
             break;
         }
         ++inx;
+    }
+    if ( status == (-ENOTTY) ) {
+        log_tr_format("Unknown command %lu\n", cmd);
     }
 
     return status;
