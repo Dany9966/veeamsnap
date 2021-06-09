@@ -259,6 +259,7 @@ int ioctl_tracking_block_size( unsigned long arg )
 
 int ioctl_tracking_read_cbt_map( unsigned long arg )
 {
+    log_tr("ioctl_tracking_read_cbt_map called.\n");
     struct ioctl_tracking_read_cbt_bitmap_s readbitmap;
 
     if (0 != copy_from_user( &readbitmap, (void*)arg, sizeof( struct ioctl_tracking_read_cbt_bitmap_s ) )){
@@ -932,17 +933,27 @@ long ctrl_unlocked_ioctl( struct file *filp, unsigned int cmd, unsigned long arg
     long status = -ENOTTY;
     size_t inx = 0;
 
-    while (veeam_ioctl_table[inx].cmd != 0){
-        if (veeam_ioctl_table[inx].cmd == cmd){
 #ifdef VEEAM_IOCTL_LOGGING
-            if (veeam_ioctl_table[inx].name != NULL){
-                log_warn( veeam_ioctl_table[inx].name );
-            }
+        log_tr_format( "### ctrl_unlocked_ioctl called with command %lu", cmd );
 #endif
+
+    while (veeam_ioctl_table[inx].cmd != 0){
+#ifdef VEEAM_IOCTL_LOGGING
+        log_tr_format( "### Found IOCTL command %lu (%s)", veeam_ioctl_table[inx].cmd, veeam_ioctl_table[inx].name );
+#endif
+        if (veeam_ioctl_table[inx].cmd == cmd){
+            #ifdef VEEAM_IOCTL_LOGGING
+            if (veeam_ioctl_table[inx].name != NULL){
+                log_tr_format( "### Found IOCTL command %lu (%s)", veeam_ioctl_table[inx].cmd, veeam_ioctl_table[inx].name );
+            }
+            #endif
             status = veeam_ioctl_table[inx].fn( arg );
             break;
         }
         ++inx;
+    }
+    if ( status == (-ENOTTY) ) {
+        log_tr_format("### Could not match IOCTL command %lu\n", cmd);
     }
 
     return status;
