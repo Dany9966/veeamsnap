@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -12,6 +13,7 @@
 #define VEEAM_SNAP_DEVICE_PATH "/dev/veeamsnap"
 
 
+/*
 void print_ioctl_codes() {
 	struct ioctl_call {
 		unsigned long long command;
@@ -65,7 +67,7 @@ void print_ioctl_codes() {
 		i ++;
 	}
 }
-
+*/
 
 
 
@@ -102,9 +104,72 @@ int add_device_for_tracking(int veeamsfd, struct ioctl_dev_id_s* device_id) {
     return res;
 }
 
+int create_snapstore_for_device(int veeamsfd, char snapstore_id[16], struct ioctl_dev_id_s* device_id) {
+    struct ioctl_snapstore_create_s* snapstore_create_params = (struct ioctl_snapstore_create_s *) malloc(sizeof(struct ioctl_snapstore_create_s));
+    if (snapstore_create_params <= 0) {
+        printf("Failed to allocate memory for snapstore creation IOCTL params.\n");
+        return -1;
+    }
+    strncpy(snapstore_create_params->id, snapstore_id, 16);
+    snapstore_create_params->count = 1;
+    snapstore_create_params->p_dev_id = device_id;
+
+    int res = ioctl(veeamsfd, IOCTL_SNAPSTORE_CREATE, snapstore_create_params);
+    if (res != 0) {
+        printf(
+            "WARN: failed to create snapstore for device %d:%d. code was: %d\n",
+            device_id->major, device_id->minor, res);
+    }
+
+    free(snapstore_create_params);
+    return res;
+}
+
+
+int set_memory_limit_for_snapstore(int veeamsfd, char snapstore_id[16], uint size_bytes) {
+    struct ioctl_snapstore_memory_limit_s * snapstore_memory_limit = (struct ioctl_snapstore_memory_limit_s *) malloc(sizeof(struct ioctl_snapstore_memory_limit_s));
+    if (snapstore_memory_limit <= 0) {
+        printf("Failed to allocate memory for snapstore memory limit IOCTL params.\n");
+        return -1;
+    }
+    strncpy(snapstore_memory_limit->id, snapstore_id, 16);
+    snapstore_memory_limit->size = size_bytes;
+
+    int res = ioctl(veeamsfd, IOCTL_SNAPSTORE_CREATE, snapstore_memory_limit);
+    if (res != 0) {
+        printf(
+            "WARN: failed to set memory limit for snapstore %16s. code was: %d\n",
+            snapstore_id, res);
+    }
+
+    free(snapstore_memory_limit);
+    return res;
+}
+
+
+int create_snapshot_for_device(int veeamsfd, struct ioctl_dev_id_s* device_id) {
+    struct ioctl_snapshot_create_s * snapshot_create_params = (struct ioctl_snapshot_create_s *) malloc(sizeof(struct ioctl_snapshot_create_s));
+    if (snapshot_create_params <= 0) {
+        printf("Failed to allocate memory for snapshot creation IOCTL params.\n");
+        return -1;
+    }
+    snapshot_create_params->p_dev_id = device_id;
+
+    int res = ioctl(veeamsfd, IOCTL_SNAPSHOT_CREATE, snapshot_create_params);
+    if (res != 0) {
+        printf(
+            "WARN: failed to create snapshot for device %d:%d. Error code: %d\n",
+            device_id->major, device_id->minor, res);
+    }
+
+    free(snapshot_create_params);
+    return res;
+}
+
 
 int main() {
     int veeamsfd = open(VEEAM_SNAP_DEVICE_PATH, O_WRONLY);
+    char snapstore_id[16] = "f18992a6225e4e7e";
     if (veeamsfd < 0) {
         printf(
             "Failed to open Veeam device %s. Code: %d\n",
@@ -112,27 +177,64 @@ int main() {
         return veeamsfd;
     }
 
-    struct ioctl_getversion_s* version = get_veeam_version(veeamsfd);
-    if (version == NULL) {
-        printf("Version get failed.\n");
-        // close(fd);
-        // return -1;
-    } else {
-        printf(
-            "Read version was: Major-Minor-Revision-Build: %d-%d-%d-%d\n",
-            version->major, version->minor, version->revision, version->build);
-    }
+    do {
+        /*
+        struct ioctl_getversion_s* version = get_veeam_version(veeamsfd);
+        if (version == NULL) {
+            printf("Version get failed.\n");
+            // close(fd);
+            // return -1;
+        } else {
+            printf(
+                "Read version was: Major-Minor-Revision-Build: %d-%d-%d-%d\n",
+                version->major, version->minor, version->revision, version->build);
+        }
 
-    // hardcoded /dev/sdb
-    struct ioctl_dev_id_s sdb_device_id = {8, 16};
-    int res = add_device_for_tracking(veeamsfd, &sdb_device_id);
-    if (res != 0) {
-        printf(
-            "Error code returned whilst trying to add device %d:%d for tracking: %d\n",
-            sdb_device_id.major, sdb_device_id.minor, res);
-    }
+        // hardcoded /dev/sdb
+        struct ioctl_dev_id_s sdb_device_id = {8, 16};
+        int res = add_device_for_tracking(veeamsfd, &sdb_device_id);
+        if (res != 0) {
+            printf(
+                "Error code returned whilst trying to add device %d:%d for tracking: %d\n",
+                sdb_device_id.major, sdb_device_id.minor, res);
+        }
+        */
 
-    free(version);
+        struct ioctl_dev_id_s sdb_device_id = {8, 16};
+        // create snapstore:
+        int res = create_snapstore_for_device(veeamsfd, snapstore_id, &sdb_device_id);
+        if (res != 0) {
+            printf(
+                "Error code returned whilst trying to enable snapstore for device %d:%d: %d\n",
+                sdb_device_id.major, sdb_device_id.minor, res);
+            break;
+        } else {
+            printf("Successfully enabled snapstore for device %d:%d\n", sdb_device_id.major, sdb_device_id.minor);
+        }
+
+        // set snapstore memory limits:
+        res = set_memory_limit_for_snapstore(veeamsfd, snapstore_id, 1024 * 1024 * 1024);
+        if (res != 0) {
+            printf(
+                "Error code returned whilst attempting to set memory limit for snapstore %16s: %d\n", snapstore_id, res);
+            break;
+        } else {
+            printf("Successfully set memory limit for snapstore %16s\n", snapstore_id);
+        }
+
+        // TODO: create snapshot
+        // create snapshot:
+        res = create_snapshot_for_device(veeamsfd, &sdb_device_id);
+        if (res != 0) {
+            printf(
+                "Error code returned whilst attempting to create snapshot for device %d:%d: %d\n", sdb_device_id.major, sdb_device_id.major, res);
+            break;
+        } else {
+            printf("Successfully created snapshot for device %d:%d\n", sdb_device_id.major, sdb_device_id.minor);
+        }
+    } while(1);
+
+    // free(version);
     close(veeamsfd);
     return 0;
 }

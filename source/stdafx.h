@@ -139,7 +139,7 @@ unsigned int get_fixflags(void);
 #define SNAPSTORE_BLK_SIZE  (sector_t)(1 << SNAPSTORE_BLK_SHIFT)
 #define SNAPSTORE_BLK_MASK  (sector_t)(SNAPSTORE_BLK_SIZE-1)
 
-//#define VEEAM_IOCTL_LOGGING
+#define VEEAM_IOCTL_LOGGING
 
 #define SNAPSTORE_MULTIDEV
 
