@@ -58,6 +58,9 @@ SHELL:=/bin/bash
 ccflags-y += $(shell if [[ -r /etc/os-release ]]; then . /etc/os-release; val="DISTRIB_NAME.$$ID"; echo "-D"$${val//[.-]/_} | awk '{print toupper($$0)}' ; fi )
 ccflags-y += $(shell if [[ -r /etc/os-release ]]; then . /etc/os-release; awk '{ n=split($$0,v,"."); for (i=0; ++i<=n;) print "-DDISTRIB_VERSION_"i"="v[i] }' <<< $$VERSION_ID ; fi )
 
+# HACK: force IOCTL logging:
+ccflags-y += -D VEEAM_IOCTL_LOGGING
+
 default:
 	@echo Configuring...
 	chmod +x ./genconfig.sh && ./genconfig.sh "$(KERNEL_RELEASE)"
