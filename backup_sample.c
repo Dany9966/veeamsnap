@@ -173,6 +173,21 @@ int create_snapshot_for_device(int veeamsfd, struct ioctl_dev_id_s* device_id) {
     return res;
 }
 
+int get_unresolved_kernel_entries(int veeamsfd, struct ioctl_get_unresolved_kernel_entries_s* unres_entries) {
+    int res = ioctl(veeamsfd, IOCTL_GET_UNRESOLVED_KERNEL_ENTRIES, unres_entries);
+    if (res < 0) {
+        printf("WARN: failed to get unresolved kernel entries: %d\n", res);
+    }
+    return res;
+}
+
+int set_kernel_entries(int veeamsfd, struct ioctl_set_kernel_entries_s* ke_entries) {
+    int res = ioctl(veeamsfd, IOCTL_SET_KERNEL_ENTRIES, ke_entries);
+    if (res < 0) {
+        printf("WARN: failed to set kernel entries: %d\n", res);
+    }
+    return res;
+}
 
 int main(int argc, char* argv[]) {
     int veeamsfd = open(VEEAM_SNAP_DEVICE_PATH, O_WRONLY);
@@ -184,7 +199,7 @@ int main(int argc, char* argv[]) {
         return veeamsfd;
     }
 
-    do {
+    // do {
         /*
         struct ioctl_getversion_s* version = get_veeam_version(veeamsfd);
         if (version == NULL) {
@@ -198,14 +213,41 @@ int main(int argc, char* argv[]) {
         }
         */
 
-        // hardcoded /dev/sdb
-        struct ioctl_dev_id_s sdb_device_id = {8, 16};
-        int res = add_device_for_tracking(veeamsfd, &sdb_device_id);
-        if (res != 0) {
-            printf(
-                "Error code returned whilst trying to add device %d:%d for tracking: %d\n",
-                sdb_device_id.major, sdb_device_id.minor, res);
+    // hardcoded /dev/sdb
+    struct ioctl_dev_id_s sdb_device_id = {252, 0};
+    int res = add_device_for_tracking(veeamsfd, &sdb_device_id);
+    if (res != 0) {
+        printf(
+            "Error code returned whilst trying to add device %d:%d for tracking: %d\n",
+            sdb_device_id.major, sdb_device_id.minor, res);
+
+        // try resolving kernel missing kernel entries
+        struct ioctl_get_unresolved_kernel_entries_s unres_entries = { "" };
+        res = get_unresolved_kernel_entries(veeamsfd, &unres_entries);
+        if (res < 0) {
+            printf("Error code returned whilst trying to get unresolved kernel entries: %d\n", res);
+        } else if (res == 0) {
+            printf("No unresolved kernel entries found\n");
+        } else {
+            printf("Unresolved entry: %s\n", unres_entries.buf);
+            struct kernel_entry_s req_module_entry = { 0xffffffff9931c830, KERNEL_ENTRY_BASE_NAME };
+            struct kernel_entry_s unres_entry = { 0xffffffff9969dd70, unres_entries.buf };
+            struct kernel_entry_s entries[2] = {req_module_entry, unres_entry};
+            struct ioctl_set_kernel_entries_s kernel_entries = { 2, entries };
+            res = set_kernel_entries(veeamsfd, &kernel_entries);
+            if (res < 0) {
+                printf("Error code returned whilst trying to set unresolved kernel entries: %d\n", res);
+            } else {
+                // Kernel entries set, retry
+                res = add_device_for_tracking(veeamsfd, &sdb_device_id);
+                if (res != 0) {
+                    printf(
+                        "Error code returned whilst trying to add device %d:%d for tracking: %d\n",
+                        sdb_device_id.major, sdb_device_id.minor, res);
+                }
+            }
         }
+    }
 
         /*
         struct ioctl_dev_id_s sdb_device_id = {8, 16};
@@ -240,7 +282,7 @@ int main(int argc, char* argv[]) {
             printf("Successfully created snapshot for device %d:%d\n", sdb_device_id.major, sdb_device_id.minor);
         }
         */
-    } while(1);
+    // } while(1);
 
     // free(version);
     close(veeamsfd);

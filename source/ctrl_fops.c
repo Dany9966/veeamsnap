@@ -331,15 +331,15 @@ int ioctl_set_kernel_entries(unsigned long arg)
     }
 
     if (0 != copy_from_user(entries, param.entries, entries_size)) {
-        log_err("Unable to set kernel entries: invalid user buffer");
+        log_err("Unable to set kernel entries: invalid user buffer: entries_size");
         ret = -ENODATA;
         goto out;
     }
 
-    // check first entry 
+    // check first entry
     name = strndup_user(entries[0].name, KERNEL_ENTRY_NAME_MAX);
     if (IS_ERR(name)) {
-        log_err("Unable to set kernel entries: invalid user buffer");
+        log_err("Unable to set kernel entries: invalid user buffer: entry_name_size");
         ret = PTR_ERR(name);
         goto out;
     }
@@ -879,6 +879,8 @@ static veeam_ioctl_table_t veeam_ioctl_table[] =
     { (IOCTL_SNAPSTORE_FILE), ioctl_snapstore_file, "IOCTL_SNAPSTORE_FILE" },
     { (IOCTL_SNAPSTORE_MEMORY), ioctl_snapstore_memory, "IOCTL_SNAPSTORE_MEMORY" },
     { (IOCTL_SNAPSTORE_CLEANUP), ioctl_snapstore_cleanup, "IOCTL_SNAPSTORE_CLEANUP" },
+    { (IOCTL_SET_KERNEL_ENTRIES), ioctl_set_kernel_entries, "IOCTL_SET_KERNEL_ENTRIES" },
+    { (IOCTL_GET_UNRESOLVED_KERNEL_ENTRIES), ioctl_get_unresolved_kernel_entries, "IOCTL_GET_UNRESOLVED_KERNEL_ENTRIES" },
 #ifdef SNAPSTORE_MULTIDEV
     { (IOCTL_SNAPSTORE_FILE_MULTIDEV), ioctl_snapstore_file_multidev, "IOCTL_SNAPSTORE_FILE_MULTIDEV" },
 #endif
