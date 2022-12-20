@@ -409,6 +409,8 @@ int tracking_collect( int max_count, struct cbt_info_s* p_cbt_info, int* p_count
 
 int tracking_read_cbt_bitmap( dev_t dev_id, unsigned int offset, size_t length, void __user* user_buff )
 {
+    log_tr_format("### reading cbt bitmap with offset: %u and length: %lu", offset, length);
+
     int result = SUCCESS;
     tracker_t* tracker = NULL;
 
